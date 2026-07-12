@@ -22,4 +22,7 @@ struct gdt_ptr {
 /* Set up and install the GDT */
 void gdt_init(void);
 
+void gdt_set_entry(int index, uint32_t base, uint32_t limit,
+                   uint8_t access, uint8_t granularity);
+
 #endif

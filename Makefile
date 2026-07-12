@@ -2,7 +2,7 @@ CC = i686-elf-gcc
 AS = i686-elf-as
 CFLAGS = -std=gnu99 -ffreestanding -O2 -Wall -Wextra
 
-OBJS = boot.o gdt_flush.o gdt.o idt.o isr_stubs.o isr.o keyboard.o pmm.o paging.o heap.o timer.o task.o switch.o fs.o shell.o kernel.o
+OBJS = boot.o gdt_flush.o gdt.o idt.o isr_stubs.o isr.o keyboard.o pmm.o paging.o heap.o timer.o task.o switch.o fs.o shell.o tss.o syscall.o user.o kernel.o
 
 all: myos.bin
 
@@ -18,7 +18,7 @@ isr_stubs.o: isr_stubs.s
 switch.o: switch.s
 	$(AS) switch.s -o switch.o
 
-kernel.o: kernel.c gdt.h idt.h isr.h keyboard.h pmm.h paging.h heap.h timer.h task.h fs.h shell.h io.h
+kernel.o: kernel.c gdt.h idt.h isr.h keyboard.h pmm.h paging.h heap.h timer.h task.h fs.h shell.h tss.h syscall.h user.h io.h
 	$(CC) -c kernel.c -o kernel.o $(CFLAGS)
 
 gdt.o: gdt.c gdt.h
@@ -53,6 +53,15 @@ fs.o: fs.c fs.h heap.h io.h
 
 shell.o: shell.c shell.h fs.h io.h
 	$(CC) -c shell.c -o shell.o $(CFLAGS)
+
+tss.o: tss.c tss.h gdt.h io.h
+	$(CC) -c tss.c -o tss.o $(CFLAGS)
+
+syscall.o: syscall.c syscall.h isr.h idt.h io.h
+	$(CC) -c syscall.c -o syscall.o $(CFLAGS)
+
+user.o: user.c user.h tss.h pmm.h io.h
+	$(CC) -c user.c -o user.o $(CFLAGS)
 
 myos.bin: $(OBJS) linker.ld
 	$(CC) -T linker.ld -o myos.bin -ffreestanding -O2 -nostdlib $(OBJS) -lgcc

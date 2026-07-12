@@ -50,6 +50,7 @@ extern void isr24(void); extern void isr25(void);
 extern void isr26(void); extern void isr27(void);
 extern void isr28(void); extern void isr29(void);
 extern void isr30(void); extern void isr31(void);
+extern void isr128(void);
 
 extern void irq0(void);  extern void irq1(void);
 extern void irq2(void);  extern void irq3(void);
@@ -64,7 +65,8 @@ extern void irq14(void); extern void irq15(void);
 void isr_init(void) {
     /* 0x08 = kernel code segment, 0x8E = present + ring 0 + 32-bit interrupt gate */
     idt_set_entry(0,  (uint32_t)isr0,  0x08, 0x8E);
-    idt_set_entry(1,  (uint32_t)isr1,  0x08, 0x8E);
+    idt_set_entry(1,  (uint32_t)isr1,  0x08, 0x8E
+);
     idt_set_entry(2,  (uint32_t)isr2,  0x08, 0x8E);
     idt_set_entry(3,  (uint32_t)isr3,  0x08, 0x8E);
     idt_set_entry(4,  (uint32_t)isr4,  0x08, 0x8E);

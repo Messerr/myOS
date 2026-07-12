@@ -1,14 +1,14 @@
 #include "gdt.h"
 
 /* Our GDT: 5 entries */
-static struct gdt_entry gdt[5];
+static struct gdt_entry gdt[6];
 static struct gdt_ptr gp;
 
 /* Defined in gdt_flush.s — loads the GDT into the CPU */
 extern void gdt_flush(uint32_t gdt_ptr_addr);
 
 /* Helper: fill in one GDT entry */
-static void gdt_set_entry(int index, uint32_t base, uint32_t limit,
+void gdt_set_entry(int index, uint32_t base, uint32_t limit,
                           uint8_t access, uint8_t granularity) {
     gdt[index].base_low    = base & 0xFFFF;
     gdt[index].base_middle = (base >> 16) & 0xFF;
@@ -23,7 +23,7 @@ static void gdt_set_entry(int index, uint32_t base, uint32_t limit,
 
 void gdt_init(void) {
     /* Set up the GDT pointer */
-    gp.limit = (sizeof(struct gdt_entry) * 5) - 1;
+    gp.limit = (sizeof(struct gdt_entry) * 6) - 1;
     gp.base  = (uint32_t) &gdt;
 
     /* Entry 0: Null segment (required) */

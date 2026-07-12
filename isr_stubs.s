@@ -138,3 +138,5 @@ irq_common:
     popa
     add $8, %esp
     iret
+
+ISR_NO_ERR 128

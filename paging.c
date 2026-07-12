@@ -64,11 +64,11 @@ void paging_init(void) {
     for (int t = 0; t < 4; t++) {
         for (int i = 0; i < 1024; i++) {
             uint32_t phys_addr = (t * 1024 + i) * PAGE_SIZE;
-            page_tables[t][i] = phys_addr | PAGE_PRESENT | PAGE_WRITABLE;
+            page_tables[t][i] = phys_addr | PAGE_PRESENT | PAGE_WRITABLE | PAGE_USER;
         }
 
         /* Point the page directory entry at this page table */
-        page_directory[t] = (uint32_t)&page_tables[t] | PAGE_PRESENT | PAGE_WRITABLE;
+        page_directory[t] = (uint32_t)&page_tables[t] | PAGE_PRESENT | PAGE_WRITABLE | PAGE_USER;
     }
 
     /* Register page fault handler (interrupt 14) */
