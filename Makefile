@@ -2,7 +2,7 @@ CC = i686-elf-gcc
 AS = i686-elf-as
 CFLAGS = -std=gnu99 -ffreestanding -O2 -Wall -Wextra
 
-OBJS = boot.o gdt_flush.o gdt.o idt.o isr_stubs.o isr.o keyboard.o pmm.o paging.o heap.o timer.o task.o switch.o fs.o shell.o tss.o syscall.o user.o kernel.o
+OBJS = boot.o gdt_flush.o gdt.o idt.o isr_stubs.o isr.o keyboard.o pmm.o paging.o heap.o timer.o task.o switch.o fs.o tss.o syscall.o fd.o kbuf.o user.o kernel.o
 
 all: myos.bin
 
@@ -18,7 +18,7 @@ isr_stubs.o: isr_stubs.s
 switch.o: switch.s
 	$(AS) switch.s -o switch.o
 
-kernel.o: kernel.c gdt.h idt.h isr.h keyboard.h pmm.h paging.h heap.h timer.h task.h fs.h shell.h tss.h syscall.h user.h io.h
+kernel.o: kernel.c gdt.h idt.h isr.h keyboard.h pmm.h paging.h heap.h timer.h task.h fs.h tss.h syscall.h user.h io.h
 	$(CC) -c kernel.c -o kernel.o $(CFLAGS)
 
 gdt.o: gdt.c gdt.h
@@ -30,7 +30,7 @@ idt.o: idt.c idt.h
 isr.o: isr.c isr.h idt.h io.h
 	$(CC) -c isr.c -o isr.o $(CFLAGS)
 
-keyboard.o: keyboard.c keyboard.h isr.h io.h shell.h
+keyboard.o: keyboard.c keyboard.h isr.h io.h kbuf.h
 	$(CC) -c keyboard.c -o keyboard.o $(CFLAGS)
 
 pmm.o: pmm.c pmm.h
@@ -51,16 +51,19 @@ task.o: task.c task.h heap.h io.h
 fs.o: fs.c fs.h heap.h io.h
 	$(CC) -c fs.c -o fs.o $(CFLAGS)
 
-shell.o: shell.c shell.h fs.h io.h
-	$(CC) -c shell.c -o shell.o $(CFLAGS)
-
 tss.o: tss.c tss.h gdt.h io.h
 	$(CC) -c tss.c -o tss.o $(CFLAGS)
 
-syscall.o: syscall.c syscall.h isr.h idt.h io.h
+syscall.o: syscall.c syscall.h isr.h idt.h io.h fs.h fd.h kbuf.h heap.h
 	$(CC) -c syscall.c -o syscall.o $(CFLAGS)
 
-user.o: user.c user.h tss.h pmm.h io.h
+fd.o: fd.c fd.h
+	$(CC) -c fd.c -o fd.o $(CFLAGS)
+
+kbuf.o: kbuf.c kbuf.h
+	$(CC) -c kbuf.c -o kbuf.o $(CFLAGS)
+
+user.o: user.c user.h tss.h pmm.h syscall.h io.h
 	$(CC) -c user.c -o user.o $(CFLAGS)
 
 myos.bin: $(OBJS) linker.ld

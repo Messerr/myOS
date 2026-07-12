@@ -2,6 +2,7 @@
 #include "isr.h"
 #include "io.h"
 #include "shell.h"
+#include "kbuf.h"
 
 static const char scancode_to_ascii[128] = {
     0, 0, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '\b',
@@ -46,7 +47,7 @@ static void keyboard_handler(struct interrupt_frame* frame) {
     char c = scancode_to_ascii[scancode];
     if (c) {
         vga_putchar(c);
-        shell_handle_char(c);
+        kbuf_put(c);
     }
 }
 
@@ -54,11 +55,12 @@ static void serial_handler(struct interrupt_frame* frame) {
     (void)frame;
     char c = inb(0x3F8);
     if (c) {
-        shell_handle_char(c);
+        kbuf_put(c);
     }
 }
 
 void keyboard_init(void) {
+    kbuf_init();
     register_interrupt_handler(33, keyboard_handler);
     outb(0x3F9, 0x01);
     outb(0x3FC, 0x0B);

@@ -10,7 +10,6 @@
 #include "timer.h"
 #include "task.h"
 #include "fs.h"
-#include "shell.h"
 #include "tss.h"
 #include "syscall.h"
 #include "user.h"
@@ -30,13 +29,11 @@ static void serial_write(const char* str) {
     }
 }
 
-/* Kernel stack for TSS (used when returning from user mode) */
 static uint8_t kernel_stack[4096] __attribute__((aligned(16)));
 
 void kernel_main(void) {
     const uint8_t color = 0x0F;
 
-    /* Initialize all subsystems */
     gdt_init();
     idt_init();
     isr_init();
@@ -44,36 +41,27 @@ void kernel_main(void) {
     pmm_init(32 * 1024);
     paging_init();
     heap_init();
-
-    /* TSS must be set up after GDT, before entering user mode */
     tss_init(0x10, (uint32_t)(kernel_stack + 4096));
-
     syscall_init();
-    tasking_init();
     fs_init();
     keyboard_init();
-    timer_init(100);
 
-    /* Enable interrupts */
     asm volatile ("sti");
 
-    /* Clear screen */
     for (int i = 0; i < VGA_WIDTH * VGA_HEIGHT; i++) {
         VGA_MEMORY[i] = vga_entry(' ', color);
     }
 
-    const char* str = "MyOS v0.8 - Userspace support";
+    const char* str = "MyOS v0.9 - User-mode shell";
     for (size_t i = 0; str[i] != '\0'; i++) {
         VGA_MEMORY[i] = vga_entry(str[i], color);
     }
     serial_write(str);
-    serial_write("\n\n");
+    serial_write("\n");
 
-    serial_write("=== Entering User Mode ===\n");
+    /* Drop into user mode — runs the shell in ring 3 */
     user_mode_init();
 
-    /* We won't reach here — user_mode_init jumps to ring 3
-     * and sys_exit halts the system */
     for (;;) {
         asm volatile ("hlt");
     }
