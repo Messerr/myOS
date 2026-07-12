@@ -14,6 +14,7 @@
 #include "syscall.h"
 #include "user.h"
 #include "io.h"
+#include "loader.h"
 
 static uint16_t* const VGA_MEMORY = (uint16_t*) 0xB8000;
 static const int VGA_WIDTH = 80;
@@ -44,6 +45,7 @@ void kernel_main(void) {
     tss_init(0x10, (uint32_t)(kernel_stack + 4096));
     syscall_init();
     fs_init();
+    loader_init();
     keyboard_init();
 
     asm volatile ("sti");

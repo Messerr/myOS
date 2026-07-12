@@ -6,6 +6,8 @@
 #include "fd.h"
 #include "kbuf.h"
 #include "heap.h"
+#include "loader.h"
+#include "user.h"
 
 static void serial_write(const char* str) {
     for (int i = 0; str[i]; i++) outb(0x3F8, str[i]);
@@ -42,7 +44,7 @@ static void syscall_handler(struct interrupt_frame* frame) {
             serial_write("[Kernel] User program exited with code ");
             serial_write_dec(arg1);
             serial_write("\n");
-            asm volatile ("cli; hlt");
+            user_mode_init();
             break;
         }
 
@@ -149,6 +151,16 @@ static void syscall_handler(struct interrupt_frame* frame) {
         case SYS_LIST: {
             fs_list();
             frame->eax = 0;
+            break;
+        }
+
+        case SYS_EXEC: {
+            const char* name = (const char*)arg1;
+            serial_write("[Kernel] sys_exec: ");
+            serial_write(name);
+            serial_write("\n");
+            int result = loader_exec(name);
+            frame->eax = result;
             break;
         }
 

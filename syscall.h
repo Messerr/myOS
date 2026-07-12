@@ -12,6 +12,7 @@
 #define SYS_FWRITE  7
 #define SYS_MALLOC  8
 #define SYS_LIST    9
+#define SYS_EXEC   10
 
 void syscall_init(void);
 

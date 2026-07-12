@@ -93,6 +93,17 @@ static void sys_list(void) {
     );
 }
 
+static int sys_exec(const char* name) {
+    int ret;
+    asm volatile (
+        "int $0x80"
+        : "=a"(ret)
+        : "a"(10), "b"((uint32_t)name)
+        : "memory"
+    );
+    return ret;
+}
+
 /* === String helpers (no kernel functions available!) === */
 
 static int u_strlen(const char* s) {
@@ -156,6 +167,7 @@ static void user_shell(void) {
             u_print("  whoami                - show privilege level\n");
             u_print("  exit                  - exit shell\n");
             u_print("  help                  - show this message\n");
+	    u_print("  exec <program>        - run a program\n");
         }
         else if (u_streq(cmd, "ls")) {
             sys_list();
@@ -213,6 +225,22 @@ static void user_shell(void) {
             const char* text = u_skip_word(cmd);
             u_print(text);
             u_print("\n");
+        }
+        else if (u_starts_with(cmd, "exec ")) {
+            const char* progname = u_skip_word(cmd);
+            if (progname[0] == '\0') {
+                u_print("Usage: exec <program>\n");
+                continue;
+            }
+            u_print("Loading program: ");
+            u_print(progname);
+            u_print("\n");
+            int result = sys_exec(progname);
+            if (result < 0) {
+                u_print("Failed to execute: ");
+                u_print(progname);
+                u_print("\n");
+            }
         }
         else if (u_streq(cmd, "whoami")) {
             u_print("Running in Ring 3 (user mode)\n");
