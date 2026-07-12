@@ -104,6 +104,26 @@ static int sys_exec(const char* name) {
     return ret;
 }
 
+static void sys_gfx_init(void) {
+    asm volatile ("int $0x80" : : "a"(11));
+}
+
+static void sys_gfx_pixel(int x, int y, int color) {
+    asm volatile ("int $0x80" : : "a"(12), "b"(x), "c"(y), "d"(color));
+}
+
+static void sys_gfx_swap(void) {
+    asm volatile ("int $0x80" : : "a"(13));
+}
+
+static void sys_gfx_clear(int color) {
+    asm volatile ("int $0x80" : : "a"(14), "b"(color));
+}
+
+static void sys_gfx_exit(void) {
+    asm volatile ("int $0x80" : : "a"(15));
+}
+
 /* === String helpers (no kernel functions available!) === */
 
 static int u_strlen(const char* s) {
@@ -168,9 +188,32 @@ static void user_shell(void) {
             u_print("  exit                  - exit shell\n");
             u_print("  help                  - show this message\n");
 	    u_print("  exec <program>        - run a program\n");
+	    u_print("  draw                  - graphics demo\n");
         }
         else if (u_streq(cmd, "ls")) {
             sys_list();
+        }
+        else if (u_streq(cmd, "draw")) {
+            u_print("Switching to graphics mode...\n");
+            sys_gfx_init();
+            /* Draw something fun from userspace */
+            sys_gfx_clear(0);
+
+            /* Draw rainbow bars */
+            for (int i = 0; i < 200; i++) {
+                for (int x = 0; x < 320; x++) {
+                    sys_gfx_pixel(x, i, 32 + ((x + i) % 224));
+                }
+            }
+            sys_gfx_swap();
+
+            /* Wait for a keypress */
+            char tmp[4];
+            sys_read(tmp, 2);
+
+            /* Return to text mode */
+            sys_gfx_exit();
+            u_print("Back to text mode.\n");
         }
         else if (u_starts_with(cmd, "cat ")) {
             const char* filename = u_skip_word(cmd);

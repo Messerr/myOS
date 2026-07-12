@@ -13,6 +13,11 @@
 #define SYS_MALLOC  8
 #define SYS_LIST    9
 #define SYS_EXEC   10
+#define SYS_GFX_INIT  11
+#define SYS_GFX_PIXEL  12
+#define SYS_GFX_SWAP  13
+#define SYS_GFX_CLEAR  14
+#define SYS_GFX_EXIT  15
 
 void syscall_init(void);
 

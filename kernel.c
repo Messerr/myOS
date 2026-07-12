@@ -15,10 +15,12 @@
 #include "user.h"
 #include "io.h"
 #include "loader.h"
+#include "vga.h"
+#include "demo.h"
 
 static uint16_t* const VGA_MEMORY = (uint16_t*) 0xB8000;
-static const int VGA_WIDTH = 80;
-static const int VGA_HEIGHT = 25;
+static const int TEXT_WIDTH = 80;
+static const int TEXT_HEIGHT = 25;
 
 static inline uint16_t vga_entry(unsigned char c, uint8_t color) {
     return (uint16_t) c | (uint16_t) color << 8;
@@ -50,7 +52,7 @@ void kernel_main(void) {
 
     asm volatile ("sti");
 
-    for (int i = 0; i < VGA_WIDTH * VGA_HEIGHT; i++) {
+    for (int i = 0; i < TEXT_WIDTH * TEXT_HEIGHT; i++) {
         VGA_MEMORY[i] = vga_entry(' ', color);
     }
 

@@ -8,6 +8,7 @@
 #include "heap.h"
 #include "loader.h"
 #include "user.h"
+#include "vga.h"
 
 static void serial_write(const char* str) {
     for (int i = 0; str[i]; i++) outb(0x3F8, str[i]);
@@ -39,7 +40,32 @@ static void syscall_handler(struct interrupt_frame* frame) {
             frame->eax = arg2;
             break;
         }
-
+        case SYS_GFX_INIT: {
+            vga_init();
+            frame->eax = 0;
+            break;
+        }
+        case SYS_GFX_PIXEL: {
+            /* arg1=x, arg2=y, arg3=color */
+            vga_putpixel(arg1, arg2, arg3);
+            frame->eax = 0;
+            break;
+        }
+        case SYS_GFX_SWAP: {
+            vga_swap();
+            frame->eax = 0;
+            break;
+        }
+        case SYS_GFX_CLEAR: {
+            vga_clear(arg1);
+            frame->eax = 0;
+            break;
+        }
+        case SYS_GFX_EXIT: {
+            vga_exit();
+            frame->eax = 0;
+            break;
+        }
         case SYS_EXIT: {
             serial_write("[Kernel] User program exited with code ");
             serial_write_dec(arg1);

@@ -2,12 +2,9 @@ CC = i686-elf-gcc
 AS = i686-elf-as
 CFLAGS = -std=gnu99 -ffreestanding -O2 -Wall -Wextra
 
-OBJS = boot.o gdt_flush.o gdt.o idt.o isr_stubs.o isr.o keyboard.o pmm.o paging.o heap.o timer.o task.o switch.o fs.o tss.o syscall.o fd.o kbuf.o loader.o builtin_programs.o user.o kernel.o
+OBJS = boot.o gdt_flush.o gdt.o idt.o isr_stubs.o isr.o keyboard.o pmm.o paging.o heap.o timer.o task.o switch.o fs.o tss.o syscall.o fd.o kbuf.o loader.o builtin_programs.o vga.o demo.o user.o kernel.o
 
-all: programs myos.bin
-
-programs:
-	./programs/build_programs.sh
+all: myos.bin
 
 boot.o: boot.s
 	$(AS) boot.s -o boot.o
@@ -21,7 +18,7 @@ isr_stubs.o: isr_stubs.s
 switch.o: switch.s
 	$(AS) switch.s -o switch.o
 
-kernel.o: kernel.c gdt.h idt.h isr.h keyboard.h pmm.h paging.h heap.h timer.h task.h fs.h tss.h syscall.h user.h loader.h io.h
+kernel.o: kernel.c gdt.h idt.h isr.h keyboard.h pmm.h paging.h heap.h timer.h task.h fs.h tss.h syscall.h user.h loader.h vga.h demo.h io.h
 	$(CC) -c kernel.c -o kernel.o $(CFLAGS)
 
 gdt.o: gdt.c gdt.h
@@ -57,7 +54,7 @@ fs.o: fs.c fs.h heap.h io.h
 tss.o: tss.c tss.h gdt.h io.h
 	$(CC) -c tss.c -o tss.o $(CFLAGS)
 
-syscall.o: syscall.c syscall.h isr.h idt.h io.h fs.h fd.h kbuf.h heap.h loader.h
+syscall.o: syscall.c syscall.h isr.h idt.h io.h fs.h fd.h kbuf.h heap.h loader.h vga.h
 	$(CC) -c syscall.c -o syscall.o $(CFLAGS)
 
 fd.o: fd.c fd.h
@@ -71,6 +68,12 @@ loader.o: loader.c loader.h fs.h pmm.h paging.h tss.h builtin_programs.h io.h
 
 builtin_programs.o: builtin_programs.c builtin_programs.h
 	$(CC) -c builtin_programs.c -o builtin_programs.o $(CFLAGS)
+
+vga.o: vga.c vga.h io.h
+	$(CC) -c vga.c -o vga.o $(CFLAGS)
+
+demo.o: demo.c demo.h vga.h
+	$(CC) -c demo.c -o demo.o $(CFLAGS)
 
 user.o: user.c user.h tss.h pmm.h syscall.h io.h
 	$(CC) -c user.c -o user.o $(CFLAGS)
